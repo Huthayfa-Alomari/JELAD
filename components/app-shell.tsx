@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const items=[["⌂","Home","/"],["⌖","Ride","/ride"],["▣","Delivery","/delivery"],["◷","Activity","/activity"],["◉","Wallet","/wallet"]];
+const items=[["⌂","Home","/"],["⌖","Ride","/ride"],["▣","Delivery","/delivery"],["◷","Activity","/activity"],["◉","Wallet","/wallet"],["⚙","Settings","/settings"]];
 
 export function AppShell({children}:{children:React.ReactNode}){
  const path=usePathname();
