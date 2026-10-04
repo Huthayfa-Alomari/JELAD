@@ -10,7 +10,7 @@ const labels: Record<string,string> = {
   COMPLETED:"Trip completed", CANCELLED:"Trip cancelled", REJECTED:"Trip rejected", EXPIRED:"Trip expired"
 };
 
-export function TripTracker({ jobId }: { jobId: string }) {
+export function TripTracker({ jobId, onDriverLocation }: { jobId: string; onDriverLocation?: (point: [number,number] | null) => void }) {
   const [data,setData]=useState<Tracking|null>(null);
   const [error,setError]=useState("");
 
@@ -20,7 +20,7 @@ export function TripTracker({ jobId }: { jobId: string }) {
       const r=await fetch(`/api/jobs/${jobId}/tracking`,{cache:"no-store"});
       const d=await r.json();
       if(!r.ok){if(mounted)setError(d.error||"Tracking unavailable");return;}
-      if(mounted){setData(d);setError("");}
+      if(mounted){setData(d);setError(""); const driverPoint=d.driver?.latitude!=null&&d.driver?.longitude!=null?[Number(d.driver.longitude),Number(d.driver.latitude)] as [number,number]:null; onDriverLocation?.(driverPoint);}
     };
     load();
     const t=setInterval(load,5000);
