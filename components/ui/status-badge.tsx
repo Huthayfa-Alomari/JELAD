@@ -1,0 +1,2 @@
+import { jobStatusLabel, type JobStatus } from "@/lib/domain";
+export function StatusBadge({status}:{status:JobStatus}){return <span className="inline-flex rounded-full bg-[#eef2f6] px-3 py-1.5 text-xs font-medium text-[#344054]">{jobStatusLabel[status]}</span>}
