@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-export function RequestButton({destinationAddress,rideClass,onCreated}:{destinationAddress:string;rideClass:string;onCreated?:(job:{pickup:[number,number];destination:[number,number]})=>void}){
+export function RequestButton({destinationAddress,rideClass,onCreated}:{destinationAddress:string;rideClass:string;onCreated?:(job:{id:string;pickup:[number,number];destination:[number,number]})=>void}){
  const [loading,setLoading]=useState(false),[message,setMessage]=useState("");
  async function request(){
   setLoading(true);setMessage("");
@@ -11,7 +11,7 @@ export function RequestButton({destinationAddress,rideClass,onCreated}:{destinat
     const r=await fetch("/api/jobs",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({type:"RIDE",destinationAddress,rideClass,pickupLat:p.coords.latitude,pickupLng:p.coords.longitude})});
     const data=await r.json(); if(!r.ok)throw new Error(data.error||"Could not create ride");
     setMessage(`Ride requested · ${data.distanceKm} km · ${Number(data.estimate).toFixed(2)} JOD`);
-    if (data.job?.pickup?.latitude != null && data.job?.destination?.latitude != null) onCreated?.({pickup:[p.coords.longitude,p.coords.latitude],destination:[Number(data.job.destination.longitude),Number(data.job.destination.latitude)]});
+    if (data.job?.pickup?.latitude != null && data.job?.destination?.latitude != null) onCreated?.({id:data.job.id,pickup:[p.coords.longitude,p.coords.latitude],destination:[Number(data.job.destination.longitude),Number(data.job.destination.latitude)]});
    }catch(e){setMessage(e instanceof Error?e.message:"Request failed");}finally{setLoading(false);}
   },()=>{setMessage("Please allow location access to request a ride.");setLoading(false)},{enableHighAccuracy:true,timeout:10000});
  }
