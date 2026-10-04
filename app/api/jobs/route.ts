@@ -23,7 +23,8 @@ export async function POST(req:NextRequest){
   const { data: dispatchResult } = await supabase.rpc("dispatch_job", { p_job_id: createdJob.id });
   if (dispatchResult) dispatchedJob = dispatchResult;
  }
- const { data: hydratedJob } = await supabase.from("jobs").select("*,pickup:pickup_location_id(*),destination:destination_location_id(*)").eq("id",dispatchedJob.id).single();\n return Response.json({job:hydratedJob||dispatchedJob,estimate,distanceKm:Math.round(km*10)/10});
+ const { data: hydratedJob } = await supabase.from("jobs").select("*,pickup:pickup_location_id(*),destination:destination_location_id(*)").eq("id",dispatchedJob.id).single();
+ return Response.json({job:hydratedJob||dispatchedJob,estimate,distanceKm:Math.round(km*10)/10});
 }
 export async function GET(){
  const supabase=await createClient(); const {data:{user}}=await supabase.auth.getUser(); if(!user)return Response.json({error:"Authentication required"},{status:401});
