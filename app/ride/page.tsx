@@ -1,4 +1,5 @@
-"use client";\nimport { RequestButton } from "./request-button";
+"use client";
+import { RequestButton } from "./request-button";
 import { useState } from "react";
 
 const rides=[["Economy","Everyday rides","2.25 JOD","3 min"],["Comfort","More space","3.10 JOD","5 min"],["XL","Up to 6 people","4.40 JOD","6 min"]];
