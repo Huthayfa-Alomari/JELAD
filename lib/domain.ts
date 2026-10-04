@@ -1,0 +1,4 @@
+export type JobType="RIDE"|"DELIVERY"|"CARGO"|"CORPORATE_TRIP";
+export type JobStatus="REQUESTED"|"SEARCHING"|"ASSIGNED"|"DRIVER_ARRIVING"|"IN_PROGRESS"|"COMPLETED"|"CANCELLED"|"REJECTED"|"EXPIRED";
+export type Job={id:string;type:JobType;status:JobStatus;pickup:string;destination:string;amount:number;createdAt:string;driver?:{name:string;rating:number;vehicle:string}};
+export const jobStatusLabel:Record<JobStatus,string>={REQUESTED:"Requested",SEARCHING:"Finding a driver",ASSIGNED:"Driver assigned",DRIVER_ARRIVING:"Driver arriving",IN_PROGRESS:"In progress",COMPLETED:"Completed",CANCELLED:"Cancelled",REJECTED:"Rejected",EXPIRED:"Expired"};
