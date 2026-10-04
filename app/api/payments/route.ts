@@ -1,0 +1,2 @@
+import { createClient } from "@/lib/supabase/server";
+export async function POST(req:Request){const supabase=await createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)return Response.json({error:"Authentication required"},{status:401});const b=await req.json();const {data,error}=await supabase.rpc("create_payment",{p_job_id:b.jobId,p_amount:Number(b.amount),p_provider:String(b.provider||"pending")});if(error)return Response.json({error:error.message},{status:400});return Response.json({payment:data});}
