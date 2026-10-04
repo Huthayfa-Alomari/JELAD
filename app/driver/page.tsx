@@ -1,0 +1,12 @@
+"use client";
+import { useState } from "react";
+
+export default function DriverPage(){
+ const [online,setOnline]=useState(false);
+ return <main className="min-h-screen bg-[#f7f8fa] text-[#101828]"><header className="border-b border-[#eaecf0] bg-white"><div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5"><div className="flex items-center gap-3"><div className="grid h-9 w-9 place-items-center rounded-xl bg-[#182230] font-bold text-white">J</div><span className="font-semibold tracking-[.16em]">JELAD DRIVER</span></div><button className="rounded-full border border-[#eaecf0] px-4 py-2 text-sm">Profile</button></div></header>
+ <div className="mx-auto max-w-6xl px-5 py-6"><div className="grid gap-5 lg:grid-cols-[1fr_360px]">
+  <section className="rounded-[28px] bg-[#182230] p-6 text-white sm:p-8"><div className="flex items-start justify-between"><div><p className="text-sm text-white/60">Today</p><h1 className="mt-1 text-3xl font-semibold">Good evening.</h1><p className="mt-2 text-sm text-white/60">Ready when you are.</p></div><button onClick={()=>setOnline(!online)} className={`rounded-full px-4 py-2 text-sm font-semibold ${online?"bg-[#c89252] text-white":"bg-white/10 text-white"}`}>{online?"Online":"Go online"}</button></div><div className="mt-12 grid grid-cols-3 gap-3">{[["Earnings","42.60 JOD"],["Trips","8"],["Rating","4.96"]].map(([a,b])=><div key={a} className="rounded-2xl bg-white/10 p-4"><p className="text-xs text-white/50">{a}</p><p className="mt-2 text-lg font-semibold">{b}</p></div>)}</div></section>
+  <section className="rounded-[28px] bg-white p-6 ring-1 ring-[#eaecf0]"><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#c89252]">Next job</p><h2 className="mt-2 text-xl font-semibold">No active requests</h2><p className="mt-2 text-sm leading-6 text-[#667085]">Go online to receive nearby ride and delivery requests.</p><button onClick={()=>setOnline(true)} className="mt-6 w-full rounded-2xl bg-[#182230] py-3.5 text-sm font-semibold text-white">Go online</button></section>
+ </div><div className="mt-5 grid gap-4 sm:grid-cols-3">{["Earnings","Trips","Vehicle"].map((x,i)=><div key={x} className="rounded-3xl bg-white p-5 ring-1 ring-[#eaecf0]"><div className="text-xs text-[#98a2b3]">0{i+1}</div><h3 className="mt-8 font-semibold">{x}</h3><p className="mt-1 text-sm text-[#667085]">{i===0?"Track your daily and weekly income.":i===1?"Review completed and cancelled jobs.":"Keep documents and vehicle status organized."}</p></div>)}</div></div>
+ </main>
+}
