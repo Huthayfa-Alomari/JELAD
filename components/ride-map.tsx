@@ -7,6 +7,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 type Props = {
   pickup?: [number, number] | null;
   destination?: [number, number] | null;
+  driver?: [number, number] | null;
 };
 
 const style: maplibregl.StyleSpecification = {
@@ -22,9 +23,10 @@ const style: maplibregl.StyleSpecification = {
   layers: [{ id: "osm", type: "raster", source: "osm" }],
 };
 
-export function RideMap({ pickup, destination }: Props) {
+export function RideMap({ pickup, destination, driver }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
+  const driverMarker = useRef<maplibregl.Marker | null>(null);
 
   useEffect(() => {
     if (!ref.current || map.current) return;
@@ -65,6 +67,18 @@ export function RideMap({ pickup, destination }: Props) {
     };
     if (m.isStyleLoaded()) draw(); else m.once("load", draw);
   }, [pickup, destination]);
+
+  useEffect(() => {
+    const m = map.current;
+    if (!m) return;
+    if (!driver) { driverMarker.current?.remove(); driverMarker.current = null; return; }
+    if (!driverMarker.current) {
+      const el = document.createElement("div");
+      el.className = "h-10 w-10 rounded-full border-4 border-white bg-[#182230] shadow-lg grid place-items-center text-white text-sm";
+      el.textContent = "●";
+      driverMarker.current = new maplibregl.Marker({ element: el }).setLngLat(driver).addTo(m);
+    } else driverMarker.current.setLngLat(driver);
+  }, [driver]);
 
   return <div ref={ref} className="h-full min-h-[520px] w-full overflow-hidden rounded-[22px]" />;
 }
