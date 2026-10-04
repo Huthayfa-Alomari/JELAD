@@ -17,7 +17,13 @@ export async function POST(req:NextRequest){
  const estimate=Math.max(base,Math.round((base+km*0.45)*100)/100);
  const {data,error}=await supabase.rpc("create_job",{p_type:type,p_pickup_address:"Current location",p_pickup_lat:lat,p_pickup_lng:lng,p_destination_address:places[0].display_name,p_destination_lat:dlat,p_destination_lng:dlng,p_estimated_amount:estimate,p_notes:null});
  if(error)return Response.json({error:error.message},{status:400});
- return Response.json({job:data,estimate,distanceKm:Math.round(km*10)/10});
+ const createdJob = Array.isArray(data) ? data[0] : data;
+ let dispatchedJob = createdJob;
+ if (createdJob?.id) {
+  const { data: dispatchResult } = await supabase.rpc("dispatch_job", { p_job_id: createdJob.id });
+  if (dispatchResult) dispatchedJob = dispatchResult;
+ }
+ return Response.json({job:dispatchedJob,estimate,distanceKm:Math.round(km*10)/10});
 }
 export async function GET(){
  const supabase=await createClient(); const {data:{user}}=await supabase.auth.getUser(); if(!user)return Response.json({error:"Authentication required"},{status:401});
