@@ -33,7 +33,7 @@ export function RideMap({ pickup, destination }: Props) {
       style,
       center: [35.91, 31.95],
       zoom: 9,
-      attributionControl: true,
+      attributionControl: {},
     });
     map.current.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     return () => { map.current?.remove(); map.current = null; };
