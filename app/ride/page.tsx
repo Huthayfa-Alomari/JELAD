@@ -1,4 +1,4 @@
-"use client";
+"use client";\nimport { RequestButton } from "./request-button";
 import { useState } from "react";
 
 const rides=[["Economy","Everyday rides","2.25 JOD","3 min"],["Comfort","More space","3.10 JOD","5 min"],["XL","Up to 6 people","4.40 JOD","6 min"]];
@@ -13,7 +13,7 @@ export default function RidePage(){
     <div><p className="text-xs font-medium text-[#667085]">JELAD RIDE</p><h1 className="mt-1 text-2xl font-semibold tracking-[-.03em]">Where to?</h1></div>
     <div className="mt-5 space-y-3"><div className="rounded-2xl border border-[#eaecf0] p-4"><p className="text-xs text-[#98a2b3]">Pickup</p><p className="mt-1 text-sm font-medium">Current location</p></div><div className="rounded-2xl border border-[#eaecf0] p-4"><p className="text-xs text-[#98a2b3]">Destination</p><input className="mt-1 w-full bg-transparent text-sm font-medium outline-none" placeholder="Search destination" /></div></div>
     <div className="mt-6"><div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">Choose a ride</h2><span className="text-xs text-[#667085]">Estimated</span></div><div className="space-y-2">{rides.map(([name,desc,price,time],i)=><button key={name} onClick={()=>setSelected(i)} className={`flex w-full items-center gap-3 rounded-2xl border p-4 text-left transition ${selected===i?"border-[#182230] bg-[#f7f8fa]":"border-[#eaecf0]"}`}><div className="grid h-10 w-10 place-items-center rounded-xl bg-[#eef2f6]">▰</div><div className="min-w-0 flex-1"><p className="text-sm font-semibold">{name}</p><p className="text-xs text-[#667085]">{desc} · {time}</p></div><span className="text-sm font-semibold">{price}</span></button>)}</div></div>
-    <button className="mt-5 w-full rounded-2xl bg-[#182230] py-4 text-sm font-semibold text-white">Confirm ride</button>
+    <RequestButton />
    </section>
   </div>
  </main>
