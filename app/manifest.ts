@@ -1,0 +1,2 @@
+import type { MetadataRoute } from "next";
+export default function manifest(): MetadataRoute.Manifest{return{name:"JELAD",short_name:"JELAD",description:"Mobility and logistics platform",start_url:"/",display:"standalone",background_color:"#f7f8fa",theme_color:"#182230",icons:[]}}
