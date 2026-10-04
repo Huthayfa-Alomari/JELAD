@@ -1,0 +1,2 @@
+import { createClient } from "@/lib/supabase/server";
+export async function POST(req:Request){const supabase=await createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)return Response.json({error:"Authentication required"},{status:401});const b=await req.json();const {data,error}=await supabase.from("ratings").insert({job_id:b.jobId,rater_id:user.id,ratee_id:b.rateeId,score:Number(b.score),comment:b.comment||null}).select().single();if(error)return Response.json({error:error.message},{status:400});return Response.json({rating:data});}
