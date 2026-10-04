@@ -1,0 +1,3 @@
+"use client";
+import { useState } from "react";
+export function RequestButton(){const [loading,setLoading]=useState(false); const [done,setDone]=useState(false); return <button onClick={()=>{setLoading(true);setTimeout(()=>{setLoading(false);setDone(true)},700)}} disabled={loading||done} className="mt-5 w-full rounded-2xl bg-[#182230] py-4 text-sm font-semibold text-white disabled:opacity-70">{loading?"Finding a driver…":done?"Request created":"Confirm ride"}</button>}
