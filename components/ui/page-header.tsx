@@ -1,0 +1,2 @@
+import Link from "next/link";
+export function PageHeader({eyebrow,title,back}:{eyebrow?:string;title:string;back?:string}){return <header className="mb-6 flex items-end justify-between gap-4">{<div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#c89252]">{eyebrow}</p><h1 className="mt-1 text-3xl font-semibold tracking-[-.04em]">{title}</h1></div>}{back&&<Link href={back} className="text-sm text-[#667085]">Back</Link>}</header>}
