@@ -1,33 +1,31 @@
-import { NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-
+import {NextRequest} from "next/server";
+import {createClient} from "@/lib/supabase/server";
 const rates={Economy:2.25,Comfort:3.1,XL:4.4} as const;
-function distanceKm(a:[number,number],b:[number,number]){const R=6371;const dLat=(b[0]-a[0])*Math.PI/180;const dLng=(b[1]-a[1])*Math.PI/180;const x=Math.sin(dLat/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
+function distanceKm(a:[number,number],b:[number,number]){const R=6371,dLat=(b[0]-a[0])*Math.PI/180,dLng=(b[1]-a[1])*Math.PI/180,x=Math.sin(dLat/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
+const allowedTypes=["RIDE","DELIVERY","CARGO","CORPORATE_TRIP","HEALTH_DELIVERY","SCHOOL_COMMUTE","EXPRESS_DELIVERY","FREIGHT"] as const;
 export async function POST(req:NextRequest){
- const supabase=await createClient(); const {data:{user}}=await supabase.auth.getUser();
- if(!user)return Response.json({error:"Authentication required"},{status:401});
- const body=await req.json(); const destinationAddress=String(body.destinationAddress||"").trim(); const type=body.type==="DELIVERY"||body.type==="CARGO"?"RIDE":(body.type||"RIDE");
+ const supabase=await createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)return Response.json({error:"Authentication required"},{status:401});
+ const body=await req.json();const destinationAddress=String(body.destinationAddress||"").trim();const type=allowedTypes.includes(body.type)?body.type:"RIDE";
  if(!destinationAddress)return Response.json({error:"Destination is required"},{status:400});
- const lat=Number(body.pickupLat),lng=Number(body.pickupLng); if(!Number.isFinite(lat)||!Number.isFinite(lng))return Response.json({error:"Pickup location is required"},{status:400});
+ const lat=Number(body.pickupLat),lng=Number(body.pickupLng);if(!Number.isFinite(lat)||!Number.isFinite(lng))return Response.json({error:"Pickup location is required"},{status:400});
  const geo=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=jo&q="+encodeURIComponent(destinationAddress+", Jordan"),{headers:{"User-Agent":"JELAD/1.0 mobility platform"}});
  if(!geo.ok)return Response.json({error:"Geocoding service unavailable"},{status:502});
- const places=await geo.json(); if(!places[0])return Response.json({error:"Destination could not be found in Jordan"},{status:422});
+ const places=await geo.json();if(!places[0])return Response.json({error:"Destination could not be found in Jordan"},{status:422});
  const dlat=Number(places[0].lat),dlng=Number(places[0].lon),km=distanceKm([lat,lng],[dlat,dlng]);
- const base=rates[(body.rideClass||"Economy") as keyof typeof rates]||rates.Economy;
- const estimate=Math.max(base,Math.round((base+km*0.45)*100)/100);
+ const base=rates[(body.rideClass||"Economy") as keyof typeof rates]||rates.Economy;const estimate=Math.max(base,Math.round((base+km*0.45)*100)/100);
  const {data,error}=await supabase.rpc("create_job",{p_type:type,p_pickup_address:"Current location",p_pickup_lat:lat,p_pickup_lng:lng,p_destination_address:places[0].display_name,p_destination_lat:dlat,p_destination_lng:dlng,p_estimated_amount:estimate,p_notes:null});
  if(error)return Response.json({error:error.message},{status:400});
- const createdJob = Array.isArray(data) ? data[0] : data;
- let dispatchedJob = createdJob;
- if (createdJob?.id) {
-  const { data: dispatchResult } = await supabase.rpc("dispatch_job", { p_job_id: createdJob.id });
-  if (dispatchResult) dispatchedJob = dispatchResult;
+ const createdJob=Array.isArray(data)?data[0]:data;let dispatchedJob=createdJob;
+ if(createdJob?.id){
+   const patch={landmark_id:body.landmarkId||null,passenger_count:Math.max(1,Number(body.passengerCount)||1),luggage_count:Math.max(0,Number(body.luggageCount)||0),flight_number:body.flightNumber||null,payment_method:["CASH","ZAIN_CASH","ORANGE_MONEY","EFAWATEERCOM"].includes(body.paymentMethod)?body.paymentMethod:"CASH",women_only:Boolean(body.womenOnly),family_mode:Boolean(body.familyMode),scheduled_pickup_time:body.scheduledPickupTime||null};
+   const {data:updated}=await supabase.from("jobs").update(patch).eq("id",createdJob.id).select().single();if(updated)dispatchedJob=updated;
+   const {data:dispatchResult}=await supabase.rpc("dispatch_job",{p_job_id:createdJob.id});if(dispatchResult)dispatchedJob=dispatchResult;
  }
- const { data: hydratedJob } = await supabase.from("jobs").select("*,pickup:pickup_location_id(*),destination:destination_location_id(*)").eq("id",dispatchedJob.id).single();
+ const {data:hydratedJob}=await supabase.from("jobs").select("*,pickup:pickup_location_id(*),destination:destination_location_id(*)").eq("id",dispatchedJob.id).single();
  return Response.json({job:hydratedJob||dispatchedJob,estimate,distanceKm:Math.round(km*10)/10});
 }
 export async function GET(){
- const supabase=await createClient(); const {data:{user}}=await supabase.auth.getUser(); if(!user)return Response.json({error:"Authentication required"},{status:401});
+ const supabase=await createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)return Response.json({error:"Authentication required"},{status:401});
  const {data,error}=await supabase.from("jobs").select("*,pickup:pickup_location_id(*),destination:destination_location_id(*)").eq("customer_id",user.id).order("created_at",{ascending:false}).limit(30);
- if(error)return Response.json({error:error.message},{status:400}); return Response.json({jobs:data});
+ if(error)return Response.json({error:error.message},{status:400});return Response.json({jobs:data});
 }
