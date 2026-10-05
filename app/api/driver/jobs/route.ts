@@ -16,11 +16,22 @@ export async function GET() {
 
   const byId = new Map((locations || []).map((l: any) => [l.id, l]));
   return Response.json({
-    jobs: jobs.map((j: any) => ({
-      ...j,
-      pickup: byId.get(j.pickup_location_id) || null,
-      destination: byId.get(j.destination_location_id) || null,
-    })),
+    jobs: jobs.map((j: any) => {
+      const assignedToMe = j.driver_id === user.id;
+      const mask = (l: any) => assignedToMe || !l ? l : {
+        ...l,
+        address: "منطقة الالتقاط",
+        latitude: Number(Number(l.latitude).toFixed(3)),
+        longitude: Number(Number(l.longitude).toFixed(3)),
+      };
+      const { pin_code: _pin, pin_failed_attempts: _attempts, pin_locked_until: _lock, ...safeJob } = j;
+      return {
+        ...safeJob,
+        pickup: mask(byId.get(j.pickup_location_id)),
+        destination: mask(byId.get(j.destination_location_id)),
+        privacy: assignedToMe ? "FULL" : "APPROXIMATE",
+      };
+    }),
   });
 }
 
