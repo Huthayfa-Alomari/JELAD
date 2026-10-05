@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     await supabase.from("drivers").update({
       identity_verified: status === "VERIFIED",
       identity_verified_at: status === "VERIFIED" ? new Date().toISOString() : null,
+      identity_verified_gender: status === "VERIFIED" ? verification.gender : null,
       is_female_driver: verification.gender === "female" && status === "VERIFIED"
     }).eq("id", verification.user_id);
   } else {
