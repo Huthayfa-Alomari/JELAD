@@ -46,7 +46,11 @@ language plpgsql
 security invoker
 set search_path=public
 as $$
-declare v_incident public.safety_incidents;
+declare
+  v_incident public.safety_incidents;
+  v_driver uuid;
+  v_contact record;
+  v_share uuid;
 begin
   if auth.uid() is null then raise exception 'authentication required'; end if;
   if p_job_id is null then
@@ -55,25 +59,32 @@ begin
     returning * into v_incident;
   else
     if not exists (
-      select 1 from public.jobs j
-      where j.id=p_job_id
-        and (j.customer_id=auth.uid() or j.driver_id=auth.uid())
-        and j.status in ('ASSIGNED','DRIVER_ARRIVING','IN_PROGRESS')
+      select 1 from public.jobs j where j.id=p_job_id
+      and (j.customer_id=auth.uid() or j.driver_id=auth.uid())
+      and j.status in ('ASSIGNED','DRIVER_ARRIVING','IN_PROGRESS')
     ) then raise exception 'active job access required'; end if;
+
+    select j.driver_id,j.share_token into v_driver,v_share from public.jobs j where j.id=p_job_id;
 
     insert into public.safety_incidents(job_id,reporter_id,category,description,severity,status)
     values(p_job_id,auth.uid(),'SOS',left(coalesce(p_description,'Emergency assistance requested'),1000),'CRITICAL','open')
     returning * into v_incident;
 
     insert into public.safety_events(job_id,driver_id,event_type,severity,status,occurred_at,metadata)
-    select p_job_id,j.driver_id,'SOS','CRITICAL','OPEN',now(),
-           jsonb_build_object('reporter_id',auth.uid(),'source','app')
-    from public.jobs j where j.id=p_job_id;
+    values(p_job_id,v_driver,'SOS','CRITICAL','OPEN',now(),jsonb_build_object('reporter_id',auth.uid(),'source','app'));
   end if;
+
+  for v_contact in
+    select contact_phone,contact_name from public.trusted_contacts
+    where user_id=auth.uid() and is_verified=true
+  loop
+    insert into public.notification_outbox(user_id,job_id,event_type,channel,recipient,payload)
+    values(auth.uid(),p_job_id,'SOS_TRUSTED_CONTACT','SMS',v_contact.contact_phone,
+      jsonb_build_object('contact_name',v_contact.contact_name,'incident_id',v_incident.id,'share_token',v_share,'message','JELAD emergency alert: a trusted contact has triggered SOS.'));
+  end loop;
 
   insert into public.audit_events(actor_id,entity_type,entity_id,action,metadata)
   values(auth.uid(),'SAFETY_INCIDENT',v_incident.id,'SOS_TRIGGERED',jsonb_build_object('job_id',p_job_id));
-
   return v_incident;
 end $$;
 
