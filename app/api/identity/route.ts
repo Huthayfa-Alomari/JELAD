@@ -7,8 +7,8 @@ export async function GET() {
   if (!user) return Response.json({ error: "Authentication required" }, { status: 401 });
 
   const [{ data: profile }, { data: driver }, { data: verifications }] = await Promise.all([
-    supabase.from("profiles").select("id,gender,identity_verified,identity_verified_at,female_safety_enabled").eq("id", user.id).maybeSingle(),
-    supabase.from("drivers").select("id,gender,identity_verified,identity_verified_at,is_female_driver,accepts_women_only").eq("id", user.id).maybeSingle(),
+    supabase.from("profiles").select("id,gender,identity_verified,identity_verified_at,identity_verified_gender,female_safety_enabled").eq("id", user.id).maybeSingle(),
+    supabase.from("drivers").select("id,gender,identity_verified,identity_verified_at,identity_verified_gender,is_female_driver,accepts_women_only").eq("id", user.id).maybeSingle(),
     supabase.from("identity_verifications").select("id,subject_type,gender,status,document_type,verified_at,rejection_reason,created_at").eq("user_id", user.id)
   ]);
 
@@ -21,6 +21,9 @@ export async function POST(req: NextRequest) {
   if (!user) return Response.json({ error: "Authentication required" }, { status: 401 });
 
   const body = await req.json();
+  const documentStoragePath = String(body.documentStoragePath || "");
+  const selfieStoragePath = String(body.selfieStoragePath || "");
+  if (!documentStoragePath.startsWith(user.id + "/") || !selfieStoragePath.startsWith(user.id + "/")) return Response.json({ error: "Secure identity uploads are required" }, { status: 400 });
   const subjectType = body.subjectType === "DRIVER" ? "DRIVER" : "CUSTOMER";
   const gender = body.gender === "female" ? "female" : body.gender === "male" ? "male" : null;
   if (!gender) return Response.json({ error: "Gender is required for identity verification" }, { status: 400 });
