@@ -1,0 +1,6 @@
+import {createClient} from "@/lib/supabase/server";
+export async function GET(){const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)return Response.json({error:"Authentication required"},{status:401});
+ const {data:profile}=await s.from("profiles").select("role").eq("id",user.id).single();if(!profile||!["CORPORATE_ADMIN","ADMIN","DISPATCHER"].includes(profile.role))return Response.json({error:"Business access required"},{status:403});
+ const [{data:accounts},{data:members},{data:invoices},{data:jobs}]=await Promise.all([s.from("corporate_accounts").select("*").order("created_at",{ascending:false}),s.from("corporate_members").select("*").eq("active",true),s.from("corporate_invoices").select("*").order("period_end",{ascending:false}).limit(12),s.from("jobs").select("id,type,status,estimated_amount,created_at").eq("type","CORPORATE_TRIP").order("created_at",{ascending:false}).limit(50)]);
+ return Response.json({accounts:accounts||[],members:members||[],invoices:invoices||[],jobs:jobs||[]});
+}
