@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const documentStoragePath = String(body.documentStoragePath || "");
   const selfieStoragePath = String(body.selfieStoragePath || "");
-  if (!documentStoragePath.startsWith(user.id + "/") || !selfieStoragePath.startsWith(user.id + "/")) return Response.json({ error: "Secure identity uploads are required" }, { status: 400 });
+  if (!documentStoragePath.startsWith(user.id + "/") || !selfieStoragePath.startsWith(user.id + "/")) return Response.json({ error: "Secure identity uploads are required" }, { status: 400 });\n  const { data: uploaded } = await supabase.from("storage.objects").select("name").eq("bucket_id","identity-documents").in("name",[documentStoragePath,selfieStoragePath]);\n  if ((uploaded || []).length !== 2) return Response.json({ error: "Identity files were not uploaded securely" }, { status: 400 });
   const subjectType = body.subjectType === "DRIVER" ? "DRIVER" : "CUSTOMER";
   const gender = body.gender === "female" ? "female" : body.gender === "male" ? "male" : null;
   if (!gender) return Response.json({ error: "Gender is required for identity verification" }, { status: 400 });
