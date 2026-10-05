@@ -8,6 +8,11 @@ export async function POST(req:NextRequest){
  const body=await req.json();const destinationAddress=String(body.destinationAddress||"").trim();const type=allowedTypes.includes(body.type)?body.type:"RIDE";
  if(!destinationAddress)return Response.json({error:"Destination is required"},{status:400});
  const lat=Number(body.pickupLat),lng=Number(body.pickupLng);if(!Number.isFinite(lat)||!Number.isFinite(lng))return Response.json({error:"Pickup location is required"},{status:400});
+ const {data:profile}=await supabase.from("profiles").select("gender,identity_verified").eq("id",user.id).maybeSingle();
+ const verifiedFemale=profile?.gender==="female"&&profile?.identity_verified===true;
+ const requestedWomenOnly=Boolean(body.womenOnly);
+ if(requestedWomenOnly&&!verifiedFemale)return Response.json({error:"Women-only rides require a verified female account."},{status:403});
+ const womenOnly=verifiedFemale ? true : requestedWomenOnly;
  const geo=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=jo&q="+encodeURIComponent(destinationAddress+", Jordan"),{headers:{"User-Agent":"JELAD/1.0 mobility platform"}});
  if(!geo.ok)return Response.json({error:"Geocoding service unavailable"},{status:502});
  const places=await geo.json();if(!places[0])return Response.json({error:"Destination could not be found in Jordan"},{status:422});
@@ -17,12 +22,12 @@ export async function POST(req:NextRequest){
  if(error)return Response.json({error:error.message},{status:400});
  const createdJob=Array.isArray(data)?data[0]:data;let dispatchedJob=createdJob;
  if(createdJob?.id){
-   const patch={landmark_id:body.landmarkId||null,passenger_count:Math.max(1,Number(body.passengerCount)||1),luggage_count:Math.max(0,Number(body.luggageCount)||0),flight_number:body.flightNumber||null,payment_method:["CASH","ZAIN_CASH","ORANGE_MONEY","EFAWATEERCOM"].includes(body.paymentMethod)?body.paymentMethod:"CASH",women_only:Boolean(body.womenOnly),family_mode:Boolean(body.familyMode),scheduled_pickup_time:body.scheduledPickupTime||null};
+   const patch={landmark_id:body.landmarkId||null,passenger_count:Math.max(1,Number(body.passengerCount)||1),luggage_count:Math.max(0,Number(body.luggageCount)||0),flight_number:body.flightNumber||null,payment_method:["CASH","ZAIN_CASH","ORANGE_MONEY","EFAWATEERCOM"].includes(body.paymentMethod)?body.paymentMethod:"CASH",women_only:womenOnly,family_mode:Boolean(body.familyMode),scheduled_pickup_time:body.scheduledPickupTime||null};
    const {data:updated}=await supabase.from("jobs").update(patch).eq("id",createdJob.id).select().single();if(updated)dispatchedJob=updated;
    const {data:dispatchResult}=await supabase.rpc("dispatch_job",{p_job_id:createdJob.id});if(dispatchResult)dispatchedJob=dispatchResult;
  }
  const {data:hydratedJob}=await supabase.from("jobs").select("*,pickup:pickup_location_id(*),destination:destination_location_id(*)").eq("id",dispatchedJob.id).single();
- return Response.json({job:hydratedJob||dispatchedJob,estimate,distanceKm:Math.round(km*10)/10});
+ return Response.json({job:hydratedJob||dispatchedJob,estimate,distanceKm:Math.round(km*10)/10,womenOnly,identityVerified:Boolean(profile?.identity_verified)});
 }
 export async function GET(){
  const supabase=await createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)return Response.json({error:"Authentication required"},{status:401});
