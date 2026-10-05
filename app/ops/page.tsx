@@ -7,7 +7,8 @@ function Pill({children,critical=false}:{children:React.ReactNode;critical?:bool
 export default function Ops(){
  const [data,setData]=useState<any>({jobs:[],drivers:[],incidents:[],safetyEvents:[],devices:[],tamper:[],crashes:[],deviations:[]});
  const [error,setError]=useState("");
- useEffect(()=>{let mounted=true;async function load(){try{const r=await fetch("/api/ops",{cache:"no-store"});const d=await r.json();if(!r.ok){setError(d.error||"Operations access required");return}if(mounted)setData(d)}catch(e){setError("تعذر الاتصال بمركز العمليات")}}load();const t=setInterval(load,10000);return()=>{mounted=false;clearInterval(t)}},[]);
+ const [staleDevices,setStaleDevices]=useState(0);
+ useEffect(()=>{let mounted=true;async function load(){try{const r=await fetch("/api/ops",{cache:"no-store"});const d=await r.json();if(!r.ok){setError(d.error||"Operations access required");return}if(mounted){setData(d); const h=await fetch("/api/ops/safety-health",{cache:"no-store"}); const hd=await h.json(); if(h.ok)setStaleDevices(Number(hd.staleDevicesDetected||0));}}catch(e){setError("تعذر الاتصال بمركز العمليات")}}load();const t=setInterval(load,10000);return()=>{mounted=false;clearInterval(t)}},[]);
  const jobs=data.jobs||[],drivers=data.drivers||[],incidents=data.incidents||[],events=data.safetyEvents||[],devices=data.devices||[],tamper=data.tamper||[],crashes=data.crashes||[],deviations=data.deviations||[];
  const active=jobs.filter((j:any)=>!activeStatuses.includes(j.status));
  const openSafety=[...events,...incidents].filter((x:any)=>!["RESOLVED","FALSE_POSITIVE","resolved","closed"].includes(x.status));
@@ -16,7 +17,7 @@ export default function Ops(){
   <header className="flex flex-wrap items-end justify-between gap-4"><div><p dir="ltr" className="text-xs font-semibold uppercase tracking-[.16em] text-[#c89252]">JELAD OPS / SAFETY</p><h1 className="mt-1 text-3xl font-semibold">مركز العمليات والسلامة</h1><p className="mt-1 text-sm text-[#667085]">مراقبة الرحلات والأجهزة والتنبيهات الحساسة من لوحة واحدة.</p></div><Pill>تحديث تلقائي · 10 ثوانٍ</Pill></header>
   {error?<p className="mt-5 rounded-2xl bg-white p-5 text-sm text-[#667085]">{error}</p>:<>
    <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-    {[["رحلات نشطة",active.length],["سائقون متصلون",drivers.filter((d:any)=>d.status?.toLowerCase()==="online").length],["تنبيهات مفتوحة",openSafety.length],["حرجة",critical],["أجهزة Safety Box",devices.filter((d:any)=>d.status==="ACTIVE").length]].map(([a,b])=><div key={String(a)} className="rounded-3xl bg-white p-5 ring-1 ring-[#eaecf0]"><p className="text-sm text-[#667085]">{a}</p><p className="mt-3 text-3xl font-semibold">{b}</p></div>)}
+    {[["رحلات نشطة",active.length],["سائقون متصلون",drivers.filter((d:any)=>d.status?.toLowerCase()==="online").length],["تنبيهات مفتوحة",openSafety.length],["حرجة",critical],["أجهزة Safety Box",devices.filter((d:any)=>d.status==="ACTIVE").length],["GPS متأخر",staleDevices]].map(([a,b])=><div key={String(a)} className="rounded-3xl bg-white p-5 ring-1 ring-[#eaecf0]"><p className="text-sm text-[#667085]">{a}</p><p className="mt-3 text-3xl font-semibold">{b}</p></div>)}
    </div>
    <div className="mt-5 overflow-hidden rounded-3xl bg-white p-3 ring-1 ring-[#eaecf0]"><OpsMap drivers={drivers}/></div>
    <section className="mt-5 grid gap-5 lg:grid-cols-2">
