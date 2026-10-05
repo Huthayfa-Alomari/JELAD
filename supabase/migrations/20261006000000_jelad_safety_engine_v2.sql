@@ -136,5 +136,5 @@ begin
  end loop;
  return v_count;
 end $$;
-revoke execute on function public.detect_stale_devices() from public,anon,authenticated;
-grant execute on function public.detect_stale_devices() to service_role;
+revoke execute on function public.detect_stale_devices() from public,anon;
+grant execute on function public.detect_stale_devices() to authenticated;
