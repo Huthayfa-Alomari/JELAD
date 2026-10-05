@@ -4,6 +4,7 @@
 drop policy if exists "safety_reporter_insert" on public.safety_incidents;
 -- Tightens telemetry/SOS authorization and audited evidence access.
 
+drop policy if exists "authenticated safety incident reporter insert" on public.safety_incidents;
 create policy "authenticated safety incident reporter insert"
 on public.safety_incidents for insert to authenticated
 with check (
@@ -18,6 +19,7 @@ with check (
   )
 );
 
+drop policy if exists "job participants insert safety events" on public.safety_events;
 create policy "job participants insert safety events"
 on public.safety_events for insert to authenticated
 with check (
@@ -29,6 +31,7 @@ with check (
   and driver_id is not null
 );
 
+drop policy if exists "drivers insert own telemetry" on public.device_telemetry;
 create policy "drivers insert own telemetry"
 on public.device_telemetry for insert to authenticated
 with check (
@@ -102,6 +105,9 @@ end $$;
 
 grant execute on function public.record_device_telemetry(uuid,uuid,uuid,double precision,double precision,numeric,numeric,numeric,numeric,boolean,boolean) to authenticated;
 
+drop policy if exists "ops read safety evidence storage" on storage.objects;
+drop policy if exists "ops insert safety evidence storage" on storage.objects;
+drop policy if exists "ops delete safety evidence storage" on storage.objects;
 create policy "ops read safety evidence storage"
 on storage.objects for select to authenticated
 using (bucket_id='safety-evidence' and public.is_ops_user());
