@@ -8,8 +8,8 @@ export async function POST(req:NextRequest){
  const body=await req.json();const destinationAddress=String(body.destinationAddress||"").trim();const type=allowedTypes.includes(body.type)?body.type:"RIDE";
  if(!destinationAddress)return Response.json({error:"Destination is required"},{status:400});
  const lat=Number(body.pickupLat),lng=Number(body.pickupLng);if(!Number.isFinite(lat)||!Number.isFinite(lng))return Response.json({error:"Pickup location is required"},{status:400});
- const {data:profile}=await supabase.from("profiles").select("gender,identity_verified").eq("id",user.id).maybeSingle();
- const verifiedFemale=profile?.gender==="female"&&profile?.identity_verified===true;
+ const {data:profile}=await supabase.from("profiles").select("gender,identity_verified,identity_verified_gender").eq("id",user.id).maybeSingle();
+ const verifiedFemale=profile?.identity_verified===true&&profile?.identity_verified_gender==="female";
  const requestedWomenOnly=Boolean(body.womenOnly);
  if(requestedWomenOnly&&!verifiedFemale)return Response.json({error:"Women-only rides require a verified female account."},{status:403});
  const womenOnly=verifiedFemale ? true : requestedWomenOnly;
