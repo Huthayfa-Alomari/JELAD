@@ -1,4 +1,7 @@
 -- JELAD safety runtime hardening v1
+-- Replaces the earlier broad reporter INSERT policy with job-aware authorization.
+
+drop policy if exists "safety_reporter_insert" on public.safety_incidents;
 -- Tightens telemetry/SOS authorization and audited evidence access.
 
 create policy "authenticated safety incident reporter insert"
