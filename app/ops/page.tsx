@@ -16,7 +16,7 @@ export default function Ops(){
  return <main dir="rtl" className="min-h-screen bg-[#f7f8fa] p-5 text-[#101828]"><div className="mx-auto max-w-7xl">
   <header className="flex flex-wrap items-end justify-between gap-4"><div><p dir="ltr" className="text-xs font-semibold uppercase tracking-[.16em] text-[#c89252]">JELAD OPS / SAFETY</p><h1 className="mt-1 text-3xl font-semibold">مركز العمليات والسلامة</h1><p className="mt-1 text-sm text-[#667085]">مراقبة الرحلات والأجهزة والتنبيهات الحساسة من لوحة واحدة.</p></div><Pill>تحديث تلقائي · 10 ثوانٍ</Pill></header>
   {error?<p className="mt-5 rounded-2xl bg-white p-5 text-sm text-[#667085]">{error}</p>:<>
-   <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+   <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
     {[["رحلات نشطة",active.length],["سائقون متصلون",drivers.filter((d:any)=>d.status?.toLowerCase()==="online").length],["تنبيهات مفتوحة",openSafety.length],["حرجة",critical],["أجهزة Safety Box",devices.filter((d:any)=>d.status==="ACTIVE").length],["GPS متأخر",staleDevices]].map(([a,b])=><div key={String(a)} className="rounded-3xl bg-white p-5 ring-1 ring-[#eaecf0]"><p className="text-sm text-[#667085]">{a}</p><p className="mt-3 text-3xl font-semibold">{b}</p></div>)}
    </div>
    <div className="mt-5 overflow-hidden rounded-3xl bg-white p-3 ring-1 ring-[#eaecf0]"><OpsMap drivers={drivers}/></div>
