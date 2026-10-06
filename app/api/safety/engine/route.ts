@@ -10,11 +10,11 @@ function haversineMeters(aLat:number,aLng:number,bLat:number,bLng:number) {
   return 2*R*Math.asin(Math.min(1,Math.sqrt(x)));
 }
 
-function pointSegmentDistanceMeters(px:number,py:number,ax:number,ay:number,bx:number,by:number) {
+function pointSegmentDistanceMeters(pLat:number,pLng:number,aLat:number,aLng:number,bLat:number,bLng:number) {
   const latScale = 111320;
-  const lngScale = 111320 * Math.cos((py*Math.PI)/180);
+  const lngScale = 111320 * Math.cos((pLat*Math.PI)/180);
   const x=(lon:number)=>lon*lngScale, y=(lat:number)=>lat*latScale;
-  const P={x:x(px),y:y(py)}, A={x:x(ax),y:y(ay)}, B={x:x(bx),y:y(by)};
+  const P={x:x(pLng),y:y(pLat)}, A={x:x(aLng),y:y(aLat)}, B={x:x(bLng),y:y(bLat)};
   const dx=B.x-A.x, dy=B.y-A.y;
   if (dx===0 && dy===0) return Math.hypot(P.x-A.x,P.y-A.y);
   const t=Math.max(0,Math.min(1,((P.x-A.x)*dx+(P.y-A.y)*dy)/(dx*dx+dy*dy)));
