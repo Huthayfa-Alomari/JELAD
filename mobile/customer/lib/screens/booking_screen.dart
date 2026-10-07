@@ -73,7 +73,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text('طلب \${widget.type}')),
+    appBar: AppBar(title: Text('طلب ${widget.type}')),
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -122,7 +122,7 @@ class _LocationTile extends StatelessWidget {
     child: ListTile(
       leading: Icon(icon),
       title: Text(title),
-      subtitle: Text('\${location.label}\n\${location.latitude.toStringAsFixed(6)}, \${location.longitude.toStringAsFixed(6)}'),
+      subtitle: Text('${location.label}\n${location.latitude.toStringAsFixed(6)}, ${location.longitude.toStringAsFixed(6)}'),
     ),
   );
 }
