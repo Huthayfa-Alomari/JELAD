@@ -14,3 +14,6 @@ Foundation scaffold created. Backend integration uses JELAD RPCs and RLS; no ser
 
 ## Build validation
 The CI workflow generates native Android/iOS platform files, validates both apps, and publishes Android debug APK artifacts. Production release builds must provide `SUPABASE_URL` and the project's publishable key through secure CI variables.
+
+
+Native builds also inject required foreground location permissions during CI platform generation.
