@@ -51,7 +51,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: jelad-\${{ matrix.app }}-android-debug
+          name: jelad-${{ matrix.app }}-android-debug
           path: mobile/${{ matrix.app }}/build/app/outputs/flutter-apk/app-debug.apk
 
   ios-build:
