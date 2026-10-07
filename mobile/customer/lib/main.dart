@@ -4,6 +4,7 @@ import 'package:jelad_core/jelad_core.dart';
 import 'screens/auth_screen.dart';
 import 'screens/safety_screen.dart';
 import 'screens/booking_screen.dart';
+import 'screens/tracking_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +26,7 @@ class CustomerHome extends StatelessWidget {
     const SizedBox(height:12),
     Card(child:ListTile(leading:const Icon(Icons.shield_outlined),title:const Text('مركز الأمان'),subtitle:const Text('SOS · مشاركة الرحلة · جهات موثوقة'),onTap:()=>Navigator.push(context,MaterialPageRoute(builder:(_)=>const CustomerSafetyScreen())))),
     Card(child:ListTile(leading:const Icon(Icons.login),title:const Text('تسجيل الدخول'),subtitle:const Text('OTP عبر رقم الهاتف'),onTap:()=>Navigator.push(context,MaterialPageRoute(builder:(_)=>const CustomerAuthScreen())))),
+    Card(child:ListTile(leading:const Icon(Icons.map_outlined),title:const Text('تتبع رحلة تجريبية'),subtitle:const Text('واجهة التتبع الحي'),onTap:()=>Navigator.push(context,MaterialPageRoute(builder:(_)=>const CustomerTrackingScreen(jobId:'demo')))),
   ]));
 }
 class _Action extends StatelessWidget { final String icon,title,subtitle; const _Action(this.icon,this.title,this.subtitle,this.onTap); final VoidCallback onTap; @override Widget build(BuildContext c)=>Card(child:ListTile(leading:Text(icon,style:const TextStyle(fontSize:28)),title:Text(title),subtitle:Text(subtitle),trailing:const Icon(Icons.chevron_right),onTap:onTap)); }
