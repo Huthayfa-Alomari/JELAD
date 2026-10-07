@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 
 function validSignature(raw: string, signature: string | null, key: string) {
   if (!signature) return false;
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   if (!tranRef) return Response.json({ error: "Missing transaction reference" }, { status: 400 });
 
   const status = responseStatus === "A" ? "PAID" : "FAILED";
-  const supabase = await createClient();
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
   const { error } = await supabase
     .from("payments")
