@@ -15,6 +15,7 @@ class _BookingScreenState extends State<BookingScreen> {
   PickedLocation? destination;
   final notes = TextEditingController();
   bool busy = false;
+  Map<String, dynamic>? quote;
 
   Future<void> _pickLocations() async {
     final result = await Navigator.push<List<PickedLocation>>(
@@ -24,7 +25,11 @@ class _BookingScreenState extends State<BookingScreen> {
       )),
     );
     if (result != null && result.length == 2) {
-      setState(() { pickup = result[0]; destination = result[1]; });
+      setState(() { pickup = result[0]; destination = result[1]; quote = null; });
+      try {
+        final q = await JeladApi(Supabase.instance.client).quoteFare(type: widget.type, pickupLat: pickup!.latitude, pickupLng: pickup!.longitude, destinationLat: destination!.latitude, destinationLng: destination!.longitude);
+        if (mounted) setState(() => quote = Map<String, dynamic>.from(q as Map));
+      } catch (_) {}
     }
   }
 
@@ -43,7 +48,7 @@ class _BookingScreenState extends State<BookingScreen> {
         'p_destination_address': destination!.label,
         'p_destination_lat': destination!.latitude,
         'p_destination_lng': destination!.longitude,
-        'p_estimated_amount': 0,
+        'p_estimated_amount': (quote?['amount'] as num?)?.toDouble() ?? 0,
         'p_notes': notes.text.trim().isEmpty ? null : notes.text.trim(),
       });
       final jobId = row is Map ? row['id']?.toString() : null;
@@ -92,6 +97,9 @@ class _BookingScreenState extends State<BookingScreen> {
           maxLines: 3,
           decoration: const InputDecoration(labelText: 'ملاحظات للسائق', border: OutlineInputBorder()),
         ),
+        const SizedBox(height: 12),
+        if (quote != null)
+          Card(child: ListTile(leading: const Icon(Icons.payments_outlined), title: Text('السعر التقديري: ${quote!['amount']} JOD'), subtitle: Text('${quote!['distance_km']} كم · ${quote!['estimated_minutes']} دقيقة'))),
         const SizedBox(height: 20),
         FilledButton.icon(
           onPressed: busy ? null : _book,
