@@ -42,6 +42,9 @@ jobs:
       - name: Generate Android platform
         working-directory: mobile/\${{ matrix.app }}
         run: flutter create --platforms=android .
+      - name: Configure Android location permission
+        working-directory: mobile/${{ matrix.app }}
+        run: sed -i '/<manifest xmlns:android=/a\    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />' android/app/src/main/AndroidManifest.xml
       - name: Build Android debug APK
         working-directory: mobile/\${{ matrix.app }}
         run: flutter pub get && flutter build apk --debug
@@ -66,6 +69,9 @@ jobs:
       - name: Generate iOS platform
         working-directory: mobile/\${{ matrix.app }}
         run: flutter create --platforms=ios .
+      - name: Configure iOS location permission
+        working-directory: mobile/${{ matrix.app }}
+        run: /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string JELAD needs your location to provide live trip navigation and safety" ios/Runner/Info.plist || true
       - name: Validate iOS build
         working-directory: mobile/\${{ matrix.app }}
         run: flutter pub get && flutter build ios --no-codesign
