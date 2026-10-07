@@ -12,4 +12,10 @@ class JeladApi {
   Future<dynamic> driverTransition(String id,String action)=>db.rpc('driver_job_transition',params:{'p_job_id':id,'p_action':action});
   Future<dynamic> updatePresence(String status)=>db.rpc('update_driver_presence',params:{'p_status':status});
   Future<dynamic> updateLocation(double lat,double lng)=>db.rpc('update_driver_location',params:{'p_lat':lat,'p_lng':lng});
+  Future<void> updateLiveTripLocation(String jobId,double lat,double lng) async {
+    final job=await db.from('jobs').select('share_token').eq('id',jobId).maybeSingle();
+    final token=job?['share_token'];
+    if(token==null) throw StateError('Trip share token unavailable');
+    await db.from('trip_live_locations').upsert({'job_id':jobId,'share_token':token,'latitude':lat,'longitude':lng,'updated_at':DateTime.now().toUtc().toIso8601String()},onConflict:'job_id');
+  }
 }
