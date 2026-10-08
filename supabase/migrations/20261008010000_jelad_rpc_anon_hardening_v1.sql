@@ -1,0 +1,2 @@
+revoke execute on function public.quote_job_fare(public.job_type,double precision,double precision,double precision,double precision,integer) from anon;
+revoke execute on function public.get_driver_job_tracking(uuid) from anon;
