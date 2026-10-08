@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:jelad_core/jelad_core.dart';
 import 'location_picker_screen.dart';
-import 'tracking_screen.dart';
+import 'payment_screen.dart';
 
 class BookingScreen extends StatefulWidget {
   final String type;
