@@ -7,8 +7,8 @@ import 'screens/booking_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (AppConfig.supabaseUrl.isNotEmpty && AppConfig.supabaseAnonKey.isNotEmpty) {
-    await Supabase.initialize(url: AppConfig.supabaseUrl, anonKey: AppConfig.supabaseAnonKey);
+  if (AppConfig.supabaseUrl.isNotEmpty && AppConfig.supabasePublishableKey.isNotEmpty) {
+    await Supabase.initialize(url: AppConfig.supabaseUrl, publishableKey: AppConfig.supabasePublishableKey);
   }
   runApp(const JeladCustomerApp());
 }
