@@ -1,7 +1,16 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient as createServerClient } from "@/lib/supabase/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
+  const authorization = req.headers.get("authorization");
+  const supabase = authorization?.toLowerCase().startsWith("bearer ")
+    ? createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+        { global: { headers: { Authorization: authorization } } },
+      )
+    : await createServerClient();
+
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return Response.json({ error: "Authentication required" }, { status: 401 });
 
