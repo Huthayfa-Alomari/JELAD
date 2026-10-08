@@ -56,7 +56,7 @@ class _BookingScreenState extends State<BookingScreen> {
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => CustomerTrackingScreen(jobId: jobId)),
+        MaterialPageRoute(builder: (_) => PaymentScreen(jobId: jobId, amount: (quote?['amount'] as num?)?.toDouble() ?? 0)),
       );
     } catch (e) {
       if (mounted) {
