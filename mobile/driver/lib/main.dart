@@ -7,27 +7,48 @@ import 'screens/driver_auth_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (AppConfig.supabaseUrl.isNotEmpty && AppConfig.supabaseAnonKey.isNotEmpty) {
-    await Supabase.initialize(url: AppConfig.supabaseUrl, anonKey: AppConfig.supabaseAnonKey);
+  final supabaseReady =
+      AppConfig.supabaseUrl.isNotEmpty && AppConfig.supabaseAnonKey.isNotEmpty;
+
+  if (supabaseReady) {
+    await Supabase.initialize(
+      url: AppConfig.supabaseUrl,
+      anonKey: AppConfig.supabaseAnonKey,
+    );
   }
-  runApp(const JeladDriverApp());
+
+  runApp(JeladDriverApp(supabaseReady: supabaseReady));
 }
 
 class JeladDriverApp extends StatefulWidget {
-  const JeladDriverApp({super.key});
-  @override State<JeladDriverApp> createState() => _JeladDriverAppState();
+  final bool supabaseReady;
+  const JeladDriverApp({super.key, required this.supabaseReady});
+
+  @override
+  State<JeladDriverApp> createState() => _JeladDriverAppState();
 }
 
 class _JeladDriverAppState extends State<JeladDriverApp> {
   bool online = false;
 
   Future<void> _login() async {
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => const DriverAuthScreen()));
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const DriverAuthScreen()),
+    );
     if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.supabaseReady) {
+      return const MaterialApp(
+        title: 'JELAD Driver',
+        debugShowCheckedModeBanner: false,
+        home: _SupabaseConfigurationScreen(),
+      );
+    }
+
     final signedIn = Supabase.instance.client.auth.currentUser != null;
     return MaterialApp(
       title: 'JELAD Driver',
@@ -71,7 +92,11 @@ class _JeladDriverAppState extends State<JeladDriverApp> {
                       try {
                         await JeladApi(Supabase.instance.client).updatePresence(value ? 'ONLINE' : 'OFFLINE');
                       } catch (e) {
-                        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تعذر تغيير الحالة: $e')));
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('تعذر تغيير الحالة: $e')),
+                          );
+                        }
                       }
                     },
                   ),
@@ -80,7 +105,10 @@ class _JeladDriverAppState extends State<JeladDriverApp> {
                       leading: const Icon(Icons.route),
                       title: const Text('الطلبات والرحلات'),
                       subtitle: const Text('استلام الرحلات وإدارة الرحلة الحالية'),
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DriverJobsScreen())),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const DriverJobsScreen()),
+                      ),
                     ),
                   ),
                   Card(
@@ -88,7 +116,10 @@ class _JeladDriverAppState extends State<JeladDriverApp> {
                       leading: const Icon(Icons.shield_outlined),
                       title: const Text('Safety Box'),
                       subtitle: const Text('GPS · SOS · Device Health'),
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DriverSafetyScreen())),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const DriverSafetyScreen()),
+                      ),
                     ),
                   ),
                   const Card(
@@ -103,4 +134,38 @@ class _JeladDriverAppState extends State<JeladDriverApp> {
       ),
     );
   }
+}
+
+class _SupabaseConfigurationScreen extends StatelessWidget {
+  const _SupabaseConfigurationScreen();
+
+  @override
+  Widget build(BuildContext context) => const Scaffold(
+    body: SafeArea(
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.settings_outlined, size: 48),
+              SizedBox(height: 16),
+              Text(
+                'يلزم إعداد الاتصال بالخادم',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8),
+              Text(
+                'لم يتم تضمين إعدادات Supabase في نسخة التطبيق. '
+                'أعد بناء التطبيق باستخدام SUPABASE_URL و'
+                'SUPABASE_PUBLISHABLE_KEY.',
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }
