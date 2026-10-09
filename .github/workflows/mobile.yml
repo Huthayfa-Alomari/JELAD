@@ -4,9 +4,11 @@ on:
   push:
     paths:
       - 'mobile/**'
+      - '.github/workflows/mobile.yml'
   pull_request:
     paths:
       - 'mobile/**'
+      - '.github/workflows/mobile.yml'
 
 jobs:
   analyze:
@@ -33,21 +35,30 @@ jobs:
     strategy:
       matrix:
         app: [customer, driver]
+    env:
+      SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
+      - name: Validate mobile Supabase configuration
+        run: |
+          test -n "$SUPABASE_URL" || (echo "Missing GitHub Actions variable SUPABASE_URL" && exit 1)
+          test -n "$SUPABASE_PUBLISHABLE_KEY" || (echo "Missing GitHub Actions variable SUPABASE_PUBLISHABLE_KEY" && exit 1)
       - name: Generate Android platform
         working-directory: mobile/${{ matrix.app }}
         run: flutter create --platforms=android .
       - name: Configure Android location permission
         working-directory: mobile/${{ matrix.app }}
         run: sed -i '/<manifest xmlns:android=/a\    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />' android/app/src/main/AndroidManifest.xml
-      - name: Build Android debug APK
+      - name: Build configured Android debug APK
         working-directory: mobile/${{ matrix.app }}
-        run: flutter pub get && flutter build apk --debug
+        run: |
+          flutter pub get
+          flutter build apk --debug --dart-define=SUPABASE_URL="$SUPABASE_URL" --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
@@ -60,18 +71,25 @@ jobs:
     strategy:
       matrix:
         app: [customer, driver]
+    env:
+      SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
+      - name: Validate mobile Supabase configuration
+        run: |
+          test -n "$SUPABASE_URL" || (echo "Missing GitHub Actions variable SUPABASE_URL" && exit 1)
+          test -n "$SUPABASE_PUBLISHABLE_KEY" || (echo "Missing GitHub Actions variable SUPABASE_PUBLISHABLE_KEY" && exit 1)
       - name: Generate iOS platform
         working-directory: mobile/${{ matrix.app }}
         run: flutter create --platforms=ios .
       - name: Configure iOS location permission
         working-directory: mobile/${{ matrix.app }}
         run: /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string JELAD needs your location to provide live trip navigation and safety" ios/Runner/Info.plist || true
-      - name: Validate iOS build
+      - name: Validate configured iOS build
         working-directory: mobile/${{ matrix.app }}
-        run: flutter pub get && flutter build ios --no-codesign
+        run: flutter pub get && flutter build ios --no-codesign --dart-define=SUPABASE_URL="$SUPABASE_URL" --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
