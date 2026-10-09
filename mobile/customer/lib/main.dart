@@ -7,20 +7,66 @@ import 'screens/booking_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (AppConfig.supabaseUrl.isNotEmpty && AppConfig.supabasePublishableKey.isNotEmpty) {
-    await Supabase.initialize(url: AppConfig.supabaseUrl, publishableKey: AppConfig.supabasePublishableKey);
+  final supabaseReady =
+      AppConfig.supabaseUrl.isNotEmpty &&
+      AppConfig.supabasePublishableKey.isNotEmpty;
+
+  if (supabaseReady) {
+    await Supabase.initialize(
+      url: AppConfig.supabaseUrl,
+      publishableKey: AppConfig.supabasePublishableKey,
+    );
   }
-  runApp(const JeladCustomerApp());
+
+  runApp(JeladCustomerApp(supabaseReady: supabaseReady));
 }
 
 class JeladCustomerApp extends StatelessWidget {
-  const JeladCustomerApp({super.key});
+  final bool supabaseReady;
+  const JeladCustomerApp({super.key, required this.supabaseReady});
+
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'JELAD',
     debugShowCheckedModeBanner: false,
     theme: ThemeData(useMaterial3: true),
-    home: const CustomerHome(),
+    home: supabaseReady
+        ? const CustomerHome()
+        : const _SupabaseConfigurationScreen(),
+  );
+}
+
+class _SupabaseConfigurationScreen extends StatelessWidget {
+  const _SupabaseConfigurationScreen();
+
+  @override
+  Widget build(BuildContext context) => const Scaffold(
+    body: SafeArea(
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.settings_outlined, size: 48),
+              SizedBox(height: 16),
+              Text(
+                'يلزم إعداد الاتصال بالخادم',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8),
+              Text(
+                'لم يتم تضمين إعدادات Supabase في نسخة التطبيق. '
+                'أعد بناء التطبيق باستخدام SUPABASE_URL و'
+                'SUPABASE_PUBLISHABLE_KEY.',
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
   );
 }
 
@@ -30,11 +76,17 @@ class CustomerHome extends StatelessWidget {
   Future<void> _openBooking(BuildContext context, String type) async {
     final client = Supabase.instance.client;
     if (client.auth.currentUser == null) {
-      await Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerAuthScreen()));
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const CustomerAuthScreen()),
+      );
       if (client.auth.currentUser == null || !context.mounted) return;
     }
     if (!context.mounted) return;
-    Navigator.push(context, MaterialPageRoute(builder: (_) => BookingScreen(type: type)));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => BookingScreen(type: type)),
+    );
   }
 
   @override
@@ -53,7 +105,10 @@ class CustomerHome extends StatelessWidget {
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        const Text('كيف تريد التنقل اليوم؟', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+        const Text(
+          'كيف تريد التنقل اليوم؟',
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         const Text('رحلة آمنة، تتبع حي، وحماية مدمجة.'),
         const SizedBox(height: 24),
@@ -66,7 +121,10 @@ class CustomerHome extends StatelessWidget {
             leading: const Icon(Icons.shield_outlined),
             title: const Text('مركز الأمان'),
             subtitle: const Text('SOS · مشاركة الرحلة · جهات موثوقة'),
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerSafetyScreen())),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CustomerSafetyScreen()),
+            ),
           ),
         ),
         if (Supabase.instance.client.auth.currentUser == null)
@@ -75,7 +133,10 @@ class CustomerHome extends StatelessWidget {
               leading: const Icon(Icons.login),
               title: const Text('تسجيل الدخول'),
               subtitle: const Text('OTP عبر رقم الهاتف'),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerAuthScreen())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CustomerAuthScreen()),
+              ),
             ),
           ),
       ],
