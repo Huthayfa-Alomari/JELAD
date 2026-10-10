@@ -3,8 +3,8 @@
 
 -- RLS does not protect against TRUNCATE. Remove anonymous table/sequence access and
 -- explicitly remove TRUNCATE from client roles on all current public tables.
-revoke all privileges on all tables in schema public from anon;
-revoke all privileges on all sequences in schema public from anon;
+revoke all privileges on all tables in schema public from public, anon;
+revoke all privileges on all sequences in schema public from public, anon;
 revoke truncate on all tables in schema public from public, anon, authenticated;
 
 -- Prevent profile self-promotion. Column-level UPDATE grants are used because RLS
