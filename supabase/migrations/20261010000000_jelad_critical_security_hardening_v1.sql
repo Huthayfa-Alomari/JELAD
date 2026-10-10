@@ -26,7 +26,9 @@ revoke insert, update, delete on table public.payments from public, anon, authen
 revoke update, delete on table public.jobs from public, anon, authenticated;
 
 -- Trusted-contact verification state and OTP material are server-managed.
-revoke update on table public.trusted_contacts from public, anon, authenticated;
+revoke insert, update on table public.trusted_contacts from public, anon, authenticated;
+grant insert (user_id, contact_name, contact_phone, relationship)
+  on table public.trusted_contacts to authenticated;
 grant update (contact_name, contact_phone, relationship, updated_at)
   on table public.trusted_contacts to authenticated;
 
